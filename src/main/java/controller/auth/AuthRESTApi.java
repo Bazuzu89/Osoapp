@@ -17,6 +17,10 @@ public class AuthRESTApi implements AuthRESTApiInterface {
 
     AuthServiceInterface authService;
 
+    public AuthRESTApi(AuthServiceInterface authService) {
+        this.authService = authService;
+    }
+
     @Override
     public ResponseEntity logout(String accessToken) {
         try {

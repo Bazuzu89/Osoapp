@@ -11,16 +11,16 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import service.UserDAOService;
+import service.UserService;
 
 
 @Configuration
 @EnableWebSecurity
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
-    private final UserDAOService userDAOService;
+    private final UserService userDAOService;
     private final BCryptPasswordEncoder bCryptoPasswordEncoder;
 
-    public ApplicationSecurityConfig(UserDAOService userDAOService, BCryptPasswordEncoder bCryptoPasswordEncoder) {
+    public ApplicationSecurityConfig(UserService userDAOService, BCryptPasswordEncoder bCryptoPasswordEncoder) {
         this.userDAOService = userDAOService;
         this.bCryptoPasswordEncoder = bCryptoPasswordEncoder;
     }
@@ -38,8 +38,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/auth/registration", "/auth/login").permitAll() //auth endpoints
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new UsernamePasswordAuthenticationFilter())
-                .addFilterBefore(new AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilter(new UsernamePasswordAuthenticationFilter());
+//                .addFilterBefore(new AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

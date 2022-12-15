@@ -3,18 +3,20 @@ package service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import exceptions.*;
-import model.DAO.TokenDAO;
-import model.DAO.UserDAO;
 import model.Token;
 import model.User;
+import model.repository.TokenRepository;
+import model.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import service.dto.EntityDto;
 import service.dto.RequestDto;
 import service.dto.UserEntitylAssembler;
+import utils.AuthUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,19 +25,27 @@ import java.util.Date;
 @Service
 public class AuthService implements AuthServiceInterface, UserDetailsService {
 
-    final UserDAO userDAO;
-    final TokenDAO tokenDAO;
+    final UserRepository userRepository;
+    final TokenRepository tokenRepository;
     final UserEntitylAssembler assembler;
+    final BCryptPasswordEncoder passwordEncoder;
+    final AuthUtils utils;
 
-    public AuthService(UserDAO userDAO, TokenDAO tokenDAO, UserEntitylAssembler assembler) {
-        this.userDAO = userDAO;
-        this.tokenDAO = tokenDAO;
+    public AuthService(UserRepository userRepository,
+                       TokenRepository tokenRepository,
+                       UserEntitylAssembler assembler,
+                       BCryptPasswordEncoder passwordEncoder,
+                       AuthUtils utils) {
+        this.userRepository = userRepository;
+        this.tokenRepository = tokenRepository;
         this.assembler = assembler;
+        this.passwordEncoder = passwordEncoder;
+        this.utils = utils;
     }
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userDAO.findByEmail(s);
+        User user = userRepository.findByEmail(s);
         //TODO implement roles into API
         Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
@@ -44,14 +54,14 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
     @Override
     public EntityDto<User> register(RequestDto<User> requestDto) throws WrongRequestType, NotValidEmailException, EmailConflictException, DAOException {
         User user = requestDto.getData();
-        userDAO.validateEmail(user.getEmail());
-        userDAO.checkUniqueEmail(user.getEmail());
+        utils.validateEmail(user.getEmail());
+        utils.checkUniqueEmail(user.getEmail());
         Token accessTokenToken;
         Token refreshTokenToken;
         User savedUser;
-        String password = userDAO.getPasswordEncoder().encode(user.getPassword());
+        String password = utils.encode(user.getPassword());
         user.setPassword(password);
-        if ((savedUser = userDAO.save(user)) != null) {
+        if ((savedUser = userRepository.save(user)) != null) {
             Algorithm algorithm = Algorithm.HMAC256("dickcheese".getBytes());
             String accessToken = JWT.create()
                     .withSubject(savedUser.getEmail())
@@ -68,10 +78,10 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
             int userId = savedUser.getId();
             accessTokenToken = new Token("Bearer " + accessToken, userId, true);
             refreshTokenToken = new Token("Bearer " + refreshToken, userId, true);
-            if (tokenDAO.save(accessTokenToken) == null || tokenDAO.save(refreshTokenToken) == null) {
-                userDAO.delete(user);
-                tokenDAO.delete(accessTokenToken);
-                tokenDAO.delete(refreshTokenToken);
+            if (tokenRepository.save(accessTokenToken) == null || tokenRepository.save(refreshTokenToken) == null) {
+                userRepository.delete(user);
+                tokenRepository.delete(accessTokenToken);
+                tokenRepository.delete(refreshTokenToken);
                 throw new DAOException();
             }
         } else {
@@ -84,14 +94,14 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
     @Override
     public EntityDto<User> login(RequestDto<User> requestDto) throws NotValidEmailException, DAOException, WrongPasswordException, UserNotFoundException {
         User user = requestDto.getData();
-        userDAO.validateEmail(user.getEmail());
-        userDAO.validatePassword(user);
+        utils.validateEmail(user.getEmail());
+        utils.validatePassword(user);
         Token accessTokenToken;
         Token refreshTokenToken;
         User userFound;
-        String password = userDAO.getPasswordEncoder().encode(user.getPassword());
+        String password = utils.encode(user.getPassword());
         user.setPassword(password);
-        if ((userFound = userDAO.findByEmail(user.getEmail())) != null) {
+        if ((userFound = userRepository.findByEmail(user.getEmail())) != null) {
             Algorithm algorithm = Algorithm.HMAC256("dickcheese".getBytes());
             String accessToken = JWT.create()
                     .withSubject(user.getEmail())
@@ -108,9 +118,9 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
             int userId = userFound.getId();
             accessTokenToken = new Token("Bearer " + accessToken, userId, true);
             refreshTokenToken = new Token("Bearer " + refreshToken, userId, true);
-            if (tokenDAO.save(accessTokenToken) == null || tokenDAO.save(refreshTokenToken) == null) {
-                tokenDAO.delete(accessTokenToken);
-                tokenDAO.delete(refreshTokenToken);
+            if (tokenRepository.save(accessTokenToken) == null || tokenRepository.save(refreshTokenToken) == null) {
+                tokenRepository.delete(accessTokenToken);
+                tokenRepository.delete(refreshTokenToken);
                 throw new DAOException();
             }
         } else {
@@ -122,6 +132,8 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
 
     @Override
     public void logout(String accessToken) throws NotAuthorizedException {
-        //TODO develop main logic of the method LOGOUT
+        Token token = tokenRepository.findTokenByUserToken(accessToken);
+        token.setIsActive(false);
+        tokenRepository.save(token);
     }
 }
