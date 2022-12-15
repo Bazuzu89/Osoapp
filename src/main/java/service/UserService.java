@@ -1,14 +1,19 @@
 package service;
 
-import model.DAO.TokenDAO;
-import model.DAO.UserDAO;
+import exceptions.EmailConflictException;
+import exceptions.NotValidEmailException;
+import exceptions.WrongPasswordException;
 import model.User;
+import model.repository.TokenRepository;
+import model.repository.UserRepository;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import service.dto.UserEntitylAssembler;
 
@@ -17,23 +22,26 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class UserDAOService implements UserDetailsService, EntityServiceInterface<User> {
+public class UserService implements UserDetailsService, EntityServiceInterface<User> {
 
-    final UserDAO userDAO;
-    final TokenDAO tokenDAO;
+    final UserRepository userRepository;
+    final TokenRepository tokenRepository;
     final UserEntitylAssembler assembler;
 
+    final BCryptPasswordEncoder passwordEncoder;
 
-    protected UserDAOService(UserDAO userDAO, TokenDAO tokenDAO, UserEntitylAssembler assembler) {
-        this.userDAO = userDAO;
-        this.tokenDAO = tokenDAO;
+
+    protected UserService(UserRepository userRepository, TokenRepository tokenRepository, UserEntitylAssembler assembler, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.tokenRepository = tokenRepository;
         this.assembler = assembler;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userDAO.findByEmail(s);
+        User user = userRepository.findByEmail(s);
         //TODO implement roles into API
         Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
@@ -49,33 +57,30 @@ public class UserDAOService implements UserDetailsService, EntityServiceInterfac
     }
 
 
-
-    public User findUserById(int id) {
-        return userDAO.findById(id);
-    }
-
     @Override
     public User findById(int id) {
-        return null;
+        return userRepository.findById(id);
     }
 
     @Override
     public List<User> findAll() {
-        return null;
+        return userRepository.findAll();
     }
 
     @Override
-    public User create(User entity) {
-        return null;
+    public User create(User user) {
+        return userRepository.save(user);
     }
 
     @Override
-    public void delete(User entity) {
-
+    public void delete(User user) {
+        userRepository.delete(user);
     }
 
     @Override
-    public User update(User entity) {
-        return null;
+    public User update(User user) {
+        return userRepository.save(user);
     }
+
+
 }

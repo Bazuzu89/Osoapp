@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@SpringBootApplication(scanBasePackages = {"controller", "model", "service"})
+@SpringBootApplication(scanBasePackages = {"controller", "model", "service", "utils"})
 @EnableJpaRepositories(basePackages = {"model.repository"})
 @EntityScan(basePackages = {"model"})
 @Slf4j
