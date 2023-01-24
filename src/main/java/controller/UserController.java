@@ -20,9 +20,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class UserController {
 
     final
-    EntityRESTApi<User> entityRESTApi;
+    EntityRESTApi entityRESTApi;
 
-    public UserController(EntityRESTApi<User> entityRESTApi) {
+    public UserController(EntityRESTApi entityRESTApi) {
         this.entityRESTApi = entityRESTApi;
     }
 

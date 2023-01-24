@@ -10,7 +10,7 @@ import service.dto.ResponseDto;
 import java.util.List;
 
 @Component
-public class UserRESTApi implements EntityRESTApi<User> {
+public class UserRESTApi implements EntityRESTApi {
     EntityServiceInterface<User> userService;
 
     @Override

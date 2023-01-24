@@ -1,15 +1,8 @@
 package service;
 
-import exceptions.EmailConflictException;
-import exceptions.NotValidEmailException;
-import exceptions.WrongPasswordException;
 import model.User;
 import model.repository.TokenRepository;
 import model.repository.UserRepository;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,12 +10,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import service.dto.UserEntitylAssembler;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-public class UserService implements UserDetailsService, EntityServiceInterface<User> {
+public class UserService implements UserDetailsService, EntityServiceInterface<UserDetails> {
 
     final UserRepository userRepository;
     final TokenRepository tokenRepository;
@@ -41,46 +33,36 @@ public class UserService implements UserDetailsService, EntityServiceInterface<U
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(s);
-        //TODO implement roles into API
-        Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
-    }
-
-    public CollectionModel<EntityModel<User>> findAllUsers() {
-        /* List<EntityModel<User>> users = userDAO.findAll().stream()
-                .map(assembler :: toModel)
-                .collect(Collectors.toList()); */
-        return null;
-        // CollectionModel.of(users,
-               // linkTo(methodOn(UserDAO.class).findAll()).withRel("users"));
+        UserDetails user = userRepository.findByUsername(s);
+        return user;
     }
 
 
     @Override
-    public User findById(int id) {
-        return userRepository.findById(id);
+    public UserDetails findById(int id) {
+        return userRepository.findById(id).get();
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDetails> findAll() {
+        return userRepository.findAll().stream()
+                .map(user -> (UserDetails) user)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User create(User user) {
-        return userRepository.save(user);
+    public UserDetails create(UserDetails entity) {
+        return userRepository.save((User) entity);
     }
 
     @Override
-    public void delete(User user) {
-        userRepository.delete(user);
+    public void delete(UserDetails entity) {
+        userRepository.delete((User) entity);
     }
 
     @Override
-    public User update(User user) {
-        return userRepository.save(user);
+    public UserDetails update(UserDetails entity) {
+        return userRepository.save((User) entity);
     }
-
 
 }

@@ -2,12 +2,12 @@ package service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.*;
 import model.Token;
 import model.User;
 import model.repository.TokenRepository;
 import model.repository.UserRepository;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,9 +18,9 @@ import service.dto.RequestDto;
 import service.dto.UserEntitylAssembler;
 import utils.AuthUtils;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 
 @Service
 public class AuthService implements AuthServiceInterface, UserDetailsService {
@@ -45,17 +45,14 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(s);
-        //TODO implement roles into API
-        Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+        return userRepository.findByUsername(s);
     }
 
     @Override
-    public EntityDto<User> register(RequestDto<User> requestDto) throws WrongRequestType, NotValidEmailException, EmailConflictException, DAOException {
+    public EntityDto<User> register(RequestDto requestDto) throws IOException, WrongRequestType, NotValidEmailException, EmailConflictException, DAOException {
         User user = requestDto.getData();
-        utils.validateEmail(user.getEmail());
-        utils.checkUniqueEmail(user.getEmail());
+        utils.validateEmail(user.getUsername());
+        utils.checkUniqueEmail(user.getUsername());
         Token accessTokenToken;
         Token refreshTokenToken;
         User savedUser;
@@ -64,13 +61,13 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
         if ((savedUser = userRepository.save(user)) != null) {
             Algorithm algorithm = Algorithm.HMAC256("dickcheese".getBytes());
             String accessToken = JWT.create()
-                    .withSubject(savedUser.getEmail())
+                    .withSubject(savedUser.getUsername())
                     .withExpiresAt(new Date(System.currentTimeMillis() + 1440*60*100000)) // 24h
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
 
             String refreshToken = JWT.create()
-                    .withSubject(savedUser.getEmail())
+                    .withSubject(savedUser.getUsername())
                     .withExpiresAt(new Date(System.currentTimeMillis() + 20160*60*100000)) // 2 weeks
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
@@ -92,25 +89,25 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
     }
 
     @Override
-    public EntityDto<User> login(RequestDto<User> requestDto) throws NotValidEmailException, DAOException, WrongPasswordException, UserNotFoundException {
+    public EntityDto<User> login(RequestDto requestDto) throws NotValidEmailException, DAOException, WrongPasswordException, UserNotFoundException {
         User user = requestDto.getData();
-        utils.validateEmail(user.getEmail());
+        utils.validateEmail(user.getUsername());
         utils.validatePassword(user);
         Token accessTokenToken;
         Token refreshTokenToken;
         User userFound;
         String password = utils.encode(user.getPassword());
         user.setPassword(password);
-        if ((userFound = userRepository.findByEmail(user.getEmail())) != null) {
+        if ((userFound = (User) userRepository.findByUsername(user.getUsername())) != null) {
             Algorithm algorithm = Algorithm.HMAC256("dickcheese".getBytes());
             String accessToken = JWT.create()
-                    .withSubject(user.getEmail())
+                    .withSubject(user.getUsername())
                     .withExpiresAt(new Date(System.currentTimeMillis() + 1440*60*100000)) // 24h
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
 
             String refreshToken = JWT.create()
-                    .withSubject(user.getEmail())
+                    .withSubject(user.getUsername())
                     .withExpiresAt(new Date(System.currentTimeMillis() + 20160*60*100000)) // 2 weeks
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);

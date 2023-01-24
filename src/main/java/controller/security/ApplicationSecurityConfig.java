@@ -1,17 +1,22 @@
 package controller.security;
 
-import controller.security.filter.AuthorizationFilter;
+//import controller.security.filter.AuthorizationFilter;
+import controller.security.filter.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import service.UserService;
+
+import static controller.security.ApplicationUserRole.ADMIN;
 
 
 @Configuration
@@ -28,19 +33,26 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+
         http
                 .csrf().disable()
-                .sessionManagement()
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
                 .authorizeRequests()
-                .antMatchers("/swagger-ui/**", "/v3/**").permitAll() //swagger
-                .antMatchers("/auth/registration", "/auth/login").permitAll() //auth endpoints
-                .anyRequest().authenticated()
-                .and()
-                .addFilter(new UsernamePasswordAuthenticationFilter());
-//                .addFilterBefore(new AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .antMatchers("/auth/**").permitAll()
+                .antMatchers("/swagger-ui/**").permitAll()
+                .antMatchers("/users/**").hasRole(ADMIN.name())
+                .anyRequest()
+                .authenticated();
+
     }
+
+//    public void configure(WebSecurity web) {
+//        web.ignoring()
+//                .antMatchers("/auth/**"); //auth endpoints
+//    }
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -51,5 +63,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Override
+    @Bean
+    protected UserDetailsService userDetailsService() {
+        return super.userDetailsService();
     }
 }
