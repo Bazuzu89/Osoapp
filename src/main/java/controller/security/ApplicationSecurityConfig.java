@@ -43,7 +43,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/swagger-ui/**").permitAll()
-                .antMatchers("/users/**").hasRole(ADMIN.name())
+//                .antMatchers("/users/**").hasRole(ADMIN.name())
                 .anyRequest()
                 .authenticated();
 

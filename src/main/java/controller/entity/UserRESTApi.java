@@ -4,7 +4,7 @@ import model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import service.EntityServiceInterface;
-import service.dto.RequestDto;
+import service.dto.RequestUserDto;
 import service.dto.ResponseDto;
 
 import java.util.List;
@@ -27,14 +27,14 @@ public class UserRESTApi implements EntityRESTApi {
     }
 
     @Override
-    public ResponseDto create(RequestDto entity) {
+    public ResponseDto create(RequestUserDto entity) {
         //TODO unwrap requestDto to User
         return null;
         // return userService.create(entity);
     }
 
     @Override
-    public void delete(RequestDto entity) {
+    public void delete(RequestUserDto entity) {
         //TODO unwrap requestDto to User
 
         // userService.delete(entity);

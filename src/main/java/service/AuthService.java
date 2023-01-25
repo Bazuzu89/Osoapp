@@ -2,7 +2,6 @@ package service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.*;
 import model.Token;
 import model.User;
@@ -14,13 +13,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import service.dto.EntityDto;
-import service.dto.RequestDto;
+import service.dto.RequestUserDto;
 import service.dto.UserEntitylAssembler;
 import utils.AuthUtils;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 
 @Service
 public class AuthService implements AuthServiceInterface, UserDetailsService {
@@ -49,7 +47,7 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
     }
 
     @Override
-    public EntityDto<User> register(RequestDto requestDto) throws IOException, WrongRequestType, NotValidEmailException, EmailConflictException, DAOException {
+    public EntityDto<User> register(RequestUserDto requestDto) throws IOException, WrongRequestType, NotValidEmailException, EmailConflictException, DAOException {
         User user = requestDto.getData();
         utils.validateEmail(user.getUsername());
         utils.checkUniqueEmail(user.getUsername());
@@ -89,7 +87,7 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
     }
 
     @Override
-    public EntityDto<User> login(RequestDto requestDto) throws NotValidEmailException, DAOException, WrongPasswordException, UserNotFoundException {
+    public EntityDto<User> login(RequestUserDto requestDto) throws NotValidEmailException, DAOException, WrongPasswordException, UserNotFoundException {
         User user = requestDto.getData();
         utils.validateEmail(user.getUsername());
         utils.validatePassword(user);

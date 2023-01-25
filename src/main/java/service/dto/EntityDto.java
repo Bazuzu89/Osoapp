@@ -1,12 +1,14 @@
 package service.dto;
 
+import model.Token;
 import org.json.JSONObject;
 import org.springframework.hateoas.EntityModel;
 
+import java.util.Map;
+
 public class EntityDto<T> extends EntityModel<T> {
     T entity;
-    JSONObject rels;
-    JSONObject link;
+    Map<String, Token> rels;
 
     public T getEntity() {
         return entity;
@@ -16,19 +18,11 @@ public class EntityDto<T> extends EntityModel<T> {
         this.entity = entity;
     }
 
-    public JSONObject getRels() {
+    public Map<String, Token> getRels() {
         return rels;
     }
 
-    public void setRels(JSONObject rels) {
+    public void setRels(Map<String, Token> rels) {
         this.rels = rels;
-    }
-
-    public JSONObject getLink() {
-        return link;
-    }
-
-    public void setLink(JSONObject link) {
-        this.link = link;
     }
 }

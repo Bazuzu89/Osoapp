@@ -5,7 +5,7 @@ import model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import service.EntityServiceInterface;
-import service.dto.RequestDto;
+import service.dto.RequestUserDto;
 import service.dto.ResponseDto;
 
 import java.util.List;
@@ -29,14 +29,14 @@ public class EquipmentItemRESTApi {
     }
 
 
-    public ResponseDto create(RequestDto entity) {
+    public ResponseDto create(RequestUserDto entity) {
         //TODO unwrap requestDto to User
         return null;
         //return equipmentItemEntityService.create(entity);
     }
 
 
-    public void delete(RequestDto entity) {
+    public void delete(RequestUserDto entity) {
         //TODO unwrap requestDto to User
 
         //equipmentItemEntityService.delete(entity);
