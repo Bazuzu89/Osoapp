@@ -2,6 +2,7 @@ package controller.auth;
 
 import exceptions.*;
 import model.User;
+import org.json.JSONObject;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -9,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import service.AuthServiceInterface;
 import service.dto.EntityDto;
-import service.dto.RequestDto;
+import service.dto.RequestUserDto;
 import service.dto.ResponseDto;
 import utils.RequestType;
 
@@ -40,7 +41,7 @@ public class AuthRESTApi implements AuthRESTApiInterface {
     }
 
     @Override
-    public ResponseEntity register(RequestDto requestDto) throws IOException {
+    public ResponseEntity register(RequestUserDto requestDto) throws IOException {
         try { //TODO refactor local variables names
             String type = requestDto.getType();
             if (!type.equals(RequestType.AUTH.toString())) {
@@ -75,7 +76,7 @@ public class AuthRESTApi implements AuthRESTApiInterface {
     }
 
     @Override
-    public ResponseEntity login(RequestDto requestDto) throws DAOException {
+    public ResponseEntity login(RequestUserDto requestDto) throws DAOException {
         try {
             //TODO wrap into ResponseEntity
             String type = requestDto.getType();
@@ -89,7 +90,8 @@ public class AuthRESTApi implements AuthRESTApiInterface {
             ResponseDto<User> respDto = new ResponseDto();
             respDto.setData(entityDto);
             respDto.setType(type);
-            return ResponseEntity.created(entityDto.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(respDto);
+            ResponseEntity<ResponseDto<User>> body = ResponseEntity.created(entityDto.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(respDto);
+            return body;
         } catch (NotValidEmailException e) {
             throw new RuntimeException(e);
         } catch (UserNotFoundException e) {

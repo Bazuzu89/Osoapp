@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import service.dto.RequestDto;
+import service.dto.RequestUserDto;
 import service.dto.ResponseDto;
 
 
@@ -27,7 +27,7 @@ public class AuthController {
 
     @PostMapping(value = "/auth/registration", consumes = {"application/json"}, produces = APPLICATION_JSON_VALUE)
     @ApiResponse(responseCode = "201", content = @Content(schema = @Schema(implementation = ResponseDto.class)))
-    ResponseEntity<?> register(@RequestBody RequestDto user, HttpServletRequest request) throws IOException {
+    ResponseEntity<?> register(@RequestBody RequestUserDto user, HttpServletRequest request) throws IOException {
         user.setIssuer(request.getRequestURL().toString());
         return authRESTApi.register(user);
     }
@@ -40,7 +40,7 @@ public class AuthController {
 
     @PostMapping(value = "/auth/login", consumes = {"application/json"}, produces = APPLICATION_JSON_VALUE)
     @ApiResponse(responseCode = "201", content = @Content(schema = @Schema(implementation = ResponseDto.class)))
-    ResponseEntity<?> login(@RequestBody RequestDto user) throws IOException, DAOException, EmailConflictException {
+    ResponseEntity<?> login(@RequestBody RequestUserDto user) throws IOException, DAOException, EmailConflictException {
         return authRESTApi.login(user);
     }
 }
