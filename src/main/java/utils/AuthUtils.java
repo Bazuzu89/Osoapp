@@ -6,6 +6,7 @@ import exceptions.WrongPasswordException;
 import model.User;
 import model.repository.UserRepository;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +25,8 @@ public class AuthUtils {
 
     public void checkUniqueEmail(String email) throws EmailConflictException {
         List<User> allUsers = userRepository.findAll();
-        for (User user : allUsers) {
-            if (user.getEmail().equals(email)) {
+        for (UserDetails user : allUsers) {
+            if (user.getUsername().equals(email)) {
                 throw new EmailConflictException();
             }
         }
@@ -38,7 +39,7 @@ public class AuthUtils {
     }
 
     public void validatePassword(User user) throws WrongPasswordException {
-        if (!passwordEncoder.matches(user.getPassword(), userRepository.findByEmail(user.getEmail()).getPassword())) {
+        if (!passwordEncoder.matches(user.getPassword(), userRepository.findByUsername(user.getUsername()).getPassword())) {
             throw new WrongPasswordException();
         }
     }

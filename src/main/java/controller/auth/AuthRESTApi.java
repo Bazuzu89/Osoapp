@@ -12,6 +12,9 @@ import service.dto.EntityDto;
 import service.dto.RequestDto;
 import service.dto.ResponseDto;
 import utils.RequestType;
+
+import java.io.IOException;
+
 @Component
 public class AuthRESTApi implements AuthRESTApiInterface {
 
@@ -37,7 +40,7 @@ public class AuthRESTApi implements AuthRESTApiInterface {
     }
 
     @Override
-    public ResponseEntity register(RequestDto<User> requestDto) {
+    public ResponseEntity register(RequestDto requestDto) throws IOException {
         try { //TODO refactor local variables names
             String type = requestDto.getType();
             if (!type.equals(RequestType.AUTH.toString())) {
@@ -72,7 +75,7 @@ public class AuthRESTApi implements AuthRESTApiInterface {
     }
 
     @Override
-    public ResponseEntity login(RequestDto<User> requestDto) throws DAOException {
+    public ResponseEntity login(RequestDto requestDto) throws DAOException {
         try {
             //TODO wrap into ResponseEntity
             String type = requestDto.getType();
