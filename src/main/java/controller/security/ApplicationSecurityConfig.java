@@ -1,6 +1,7 @@
 package controller.security;
 
 //import controller.security.filter.AuthorizationFilter;
+import controller.security.filter.AuthorizationFilter;
 import controller.security.filter.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,12 +41,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
+                .addFilterAfter(new AuthorizationFilter(), JwtUsernameAndPasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/swagger-ui/**").permitAll()
 //                .antMatchers("/users/**").hasRole(ADMIN.name())
                 .anyRequest()
                 .authenticated();
+                ;
 
     }
 

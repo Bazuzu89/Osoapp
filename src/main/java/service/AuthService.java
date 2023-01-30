@@ -1,8 +1,12 @@
 package service;
 
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import exceptions.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import model.Token;
 import model.User;
 import model.repository.TokenRepository;
@@ -18,7 +22,10 @@ import service.dto.UserEntitylAssembler;
 import utils.AuthUtils;
 
 import java.io.IOException;
+import java.security.Key;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService implements AuthServiceInterface, UserDetailsService {
@@ -57,15 +64,23 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
         String password = utils.encode(user.getPassword());
         user.setPassword(password);
         if ((savedUser = userRepository.save(user)) != null) {
-            Algorithm algorithm = Algorithm.HMAC256("dickcheese".getBytes());
+            Algorithm algorithm = Algorithm.HMAC256("dickcheesedickcheesedickcheesedickcheesedickcheesedickcheese".getBytes());
+
+
             String accessToken = JWT.create()
                     .withSubject(savedUser.getUsername())
+                    .withClaim("authorities", savedUser.getAuthorities().stream()
+                            .map(authority -> authority.getAuthority())
+                            .collect(Collectors.toList()))
                     .withExpiresAt(new Date(System.currentTimeMillis() + 1440*60*100000)) // 24h
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
 
             String refreshToken = JWT.create()
                     .withSubject(savedUser.getUsername())
+                    .withClaim("authorities", savedUser.getAuthorities().stream()
+                            .map(authority -> authority.getAuthority())
+                            .collect(Collectors.toList()))
                     .withExpiresAt(new Date(System.currentTimeMillis() + 20160*60*100000)) // 2 weeks
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
@@ -97,15 +112,24 @@ public class AuthService implements AuthServiceInterface, UserDetailsService {
         String password = utils.encode(user.getPassword());
         user.setPassword(password);
         if ((userFound = (User) userRepository.findByUsername(user.getUsername())) != null) {
-            Algorithm algorithm = Algorithm.HMAC256("dickcheese".getBytes());
+            String key = "dickcheesedickcheesedickcheesedickcheesedickcheesedickcheese";
+            Algorithm algorithm = Algorithm.HMAC256(key.getBytes());
+
+
             String accessToken = JWT.create()
                     .withSubject(user.getUsername())
+                    .withClaim("authorities", userFound.getAuthorities().stream()
+                            .map(authority -> authority.getAuthority())
+                            .collect(Collectors.toList()))
                     .withExpiresAt(new Date(System.currentTimeMillis() + 1440*60*100000)) // 24h
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
 
             String refreshToken = JWT.create()
                     .withSubject(user.getUsername())
+                    .withClaim("authorities", userFound.getAuthorities().stream()
+                            .map(authority -> authority.getAuthority())
+                            .collect(Collectors.toList()))
                     .withExpiresAt(new Date(System.currentTimeMillis() + 20160*60*100000)) // 2 weeks
                     .withIssuer(requestDto.getIssuer())
                     .sign(algorithm);
