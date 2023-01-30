@@ -30,8 +30,11 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 try {
                     String token = authorizationHeader.substring("Bearer ".length());
-                    Algorithm algorithm = Algorithm.HMAC256("dickcheesedickcheesedickcheese".getBytes());
+                    Algorithm algorithm = Algorithm.HMAC256("dickcheesedickcheesedickcheesedickcheesedickcheesedickcheese");
+
                     JWTVerifier verifier = JWT.require(algorithm).build();
+
+
                     DecodedJWT decodedJWT = verifier.verify(token);
                     String email = decodedJWT.getSubject();
                     UsernamePasswordAuthenticationToken authenticationToken
@@ -46,7 +49,5 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             } else {
                 filterChain.doFilter(request, response);
             }
-
-
     }
 }

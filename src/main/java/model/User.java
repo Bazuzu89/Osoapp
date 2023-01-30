@@ -37,7 +37,7 @@ public class User implements Serializable, UserDetails {
     @Schema(accessMode = Schema.AccessMode.WRITE_ONLY)
     private String password;
 
-    private ApplicationUserRole role = ENGINEER;
+    private String role = ENGINEER.name();
     @JsonIgnore
     private boolean isEnabled;
     @JsonIgnore
@@ -56,7 +56,8 @@ public class User implements Serializable, UserDetails {
     @Override
     public Set<? extends GrantedAuthority> getAuthorities() {
         //TODO implement Authorities in DB
-        return role.getPermissions().stream()
+
+        return ApplicationUserRole.valueOf(role).getPermissions().stream()
                 .map(permission -> new SimpleGrantedAuthority(permission.name()))
                 .collect(Collectors.toSet());
     }
@@ -102,6 +103,9 @@ public class User implements Serializable, UserDetails {
         this.password = password;
     }
 
+    public String getRole() {
+        return role;
+    }
 }
 
 

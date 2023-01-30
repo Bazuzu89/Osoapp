@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import service.dto.UserEntitylAssembler;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Component
 public class UserService implements UserDetailsService, EntityServiceInterface<UserDetails> {
 
     final UserRepository userRepository;
@@ -23,12 +25,14 @@ public class UserService implements UserDetailsService, EntityServiceInterface<U
     final BCryptPasswordEncoder passwordEncoder;
 
 
-    protected UserService(UserRepository userRepository, TokenRepository tokenRepository, UserEntitylAssembler assembler, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, TokenRepository tokenRepository, UserEntitylAssembler assembler, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.assembler = assembler;
         this.passwordEncoder = passwordEncoder;
     }
+
+
 
 
     @Override

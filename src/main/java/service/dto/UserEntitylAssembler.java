@@ -27,6 +27,14 @@ public class UserEntitylAssembler {
         return entityDto;
     }
 
+    public EntityDto<User> toModel(User entity) {
+        EntityDto<User> entityDto = new EntityDto<>();
+        entityDto.add(linkTo(methodOn(UserController.class).one(entity.getId())).withSelfRel());
+        entityDto.add(linkTo(methodOn(UserController.class).all()).withRel("users"));
+        entityDto.setEntity(entity);
+        return entityDto;
+    }
+
     //TODO implement this method
     /* @Override
     public CollectionModel<EntityModel<User>> toCollectionModel(Iterable<? extends User> entities) {
